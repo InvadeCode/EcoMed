@@ -3,7 +3,7 @@ import {
   HeartPulse, Stethoscope, Activity, Phone, Mail, MapPin, Search, Menu, X, 
   ChevronRight, ShieldCheck, Truck, CheckCircle2, FileText, Building2, 
   Users, ArrowRight, Upload, PhoneCall, MessageSquare, ChevronDown, Globe,
-  Download, BookOpen, Award, Map, Video, ArrowUpRight, BadgeCheck, Check, Star
+  Download, BookOpen, Award, Map, Video, ArrowUpRight, BadgeCheck, Check, Star, ArrowUp
 } from 'lucide-react';
 
 // --- CUSTOM ANIMATION COMPONENT ---
@@ -44,7 +44,7 @@ const COMPANY_INFO = {
   tagline: "IndiaMART TrustSeal Verified Medical Supplier",
   phone: "08043853505",
   email: "contact@ecomedsolutions.co.in",
-  whatsapp: "08043853505",
+  whatsapp: "918043853505",
   address: "Fld3/B403, Sn44a, Vardhaman Township, Sasane Nagar, Hadapsar, Pune - 411028, Maharashtra, India",
   gst: "27BOBPM6383J1ZJ",
   turnover: "₹10 - ₹25 Cr",
@@ -69,6 +69,11 @@ const PRODUCTS = [
     name: 'Medtech Oxygen Concentrator (5L/10L)',
     brand: 'Medtech Life',
     image: 'https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&q=80&w=800',
+    gallery: [
+      'https://images.unsplash.com/photo-1584362917165-526a968579e8?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800', // Mocking additional angles
+      'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&q=80&w=800'
+    ],
     shortDesc: 'High purity continuous oxygen supply. Trusted by leading hospitals.',
     features: ['93% ± 3% Oxygen Purity', 'Low Noise Operation', 'Nebulizer Function Included', 'CE Certified'],
     specs: { 'Capacity': '5L - 10L Options', 'Purity': '93% ± 3%', 'Type': 'Portable / Stationary', 'Warranty': '2 Years' },
@@ -80,6 +85,10 @@ const PRODUCTS = [
     name: 'Semi Fowler Bed With Side Rails',
     brand: 'Ecomed Solutions',
     image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800',
+    gallery: [
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1581055989569-7c42730a91db?auto=format&fit=crop&q=80&w=800'
+    ],
     shortDesc: 'Durable epoxy-coated steel hospital bed with adjustable backrest.',
     features: ['Collapsible Side Rails', 'Heavy Duty IV Pole', 'Smooth Crank Mechanism', 'Lockable Castors'],
     specs: { 'Material': 'Epoxy Coated Mild Steel', 'Adjustment': 'Manual Backrest', 'Safe Load': '150 kg', 'Wheels': '125mm Dia' },
@@ -91,6 +100,9 @@ const PRODUCTS = [
     name: 'Poct Gluco Spot Glucometer (With 25 Strips)',
     brand: 'POCT Services',
     image: 'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&q=80&w=800',
+    gallery: [
+      'https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&q=80&w=800'
+    ],
     shortDesc: 'Accurate and rapid blood glucose monitoring system for clinical & home use.',
     features: ['Results in 5 Seconds', 'Auto Coding', 'Tiny Blood Sample', 'Large LCD Display'],
     specs: { 'Testing Time': '5 Seconds', 'Sample Volume': '0.5 µL', 'Memory': '500 Test Results', 'Kit Includes': 'Meter + 25 Strips' },
@@ -102,7 +114,11 @@ const PRODUCTS = [
     name: 'Gynec Examination Table',
     brand: 'Ecomed Solutions',
     image: 'https://images.unsplash.com/photo-1581055989569-7c42730a91db?auto=format&fit=crop&q=80&w=800',
-    shortDesc: 'Premium upholstered examination table with lithotomy lithotomy poles.',
+    gallery: [
+      'https://images.unsplash.com/photo-1581055989569-7c42730a91db?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800'
+    ],
+    shortDesc: 'Premium upholstered examination table with lithotomy poles.',
     features: ['Lithotomy Crutches', 'Adjustable Backrest', 'Stainless Steel Bowl', 'High-Density Foam'],
     specs: { 'Frame': 'Tubular Steel Frame', 'Top': 'Two Section Cushioned', 'Finish': 'Pre-treated & Epoxy Powder Coated', 'Load': '120 kg' },
     moq: '2 Pieces'
@@ -152,14 +168,50 @@ const CORE_VALUES = [
 
 // --- COMPONENTS ---
 
+// Toast Notification Component
+const Toast = ({ message, type = 'success', onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => onClose(), 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed top-24 right-4 z-[200] animate-in slide-in-from-right-8 fade-in duration-300">
+      <div className={`flex items-center px-4 py-3 rounded-lg shadow-lg border ${type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+        {type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-500 mr-3" />}
+        <p className="font-semibold text-sm mr-4">{message}</p>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+      </div>
+    </div>
+  );
+};
+
 // 1. Navigation & Header
 const Navbar = ({ navigate, onOpenQuote }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Smart Navbar Scroll Effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Live Search Logic
+  const searchResults = PRODUCTS.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 4);
 
   return (
-    <header className="bg-white/90 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50 transition-all">
-      {/* Top Bar - Social Proof */}
-      <div className="bg-slate-900 text-gray-300 py-2 hidden md:block">
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-xl shadow-md border-b border-gray-200' : 'bg-white/90 backdrop-blur-md border-b border-gray-200'}`}>
+      {/* Top Bar - Social Proof (Hides on Scroll) */}
+      <div className={`bg-slate-900 text-gray-300 overflow-hidden transition-all duration-300 hidden md:block ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-auto py-2 opacity-100'}`}>
         <div className="w-full max-w-7xl mx-auto px-[5%] flex justify-between items-center text-[11px] font-bold tracking-widest uppercase">
           <div className="flex space-x-6">
             <span className="flex items-center text-emerald-400"><BadgeCheck className="w-4 h-4 mr-1.5" /> IndiaMART TrustSeal Verified</span>
@@ -173,7 +225,7 @@ const Navbar = ({ navigate, onOpenQuote }) => {
       </div>
 
       {/* Main Navbar */}
-      <div className="w-full max-w-7xl mx-auto px-[5%] h-20 flex justify-between items-center">
+      <div className={`w-full max-w-7xl mx-auto px-[5%] flex justify-between items-center transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}>
         <div className="flex items-center cursor-pointer group" onClick={() => navigate('home')}>
           <img 
             src="https://5.imimg.com/data5/SELLER/Logo/2025/1/484689701/IV/JM/GC/74917398/ecomed-logo-page-0001-90x90.jpg" 
@@ -183,26 +235,56 @@ const Navbar = ({ navigate, onOpenQuote }) => {
           <span className="text-2xl font-extrabold tracking-tighter bg-gradient-to-r from-blue-800 via-blue-600 to-cyan-500 text-transparent bg-clip-text">EcoMed.</span>
         </div>
 
-        {/* Search */}
+        {/* Live Search */}
         <div className="hidden md:flex flex-1 max-w-md mx-8 relative group">
           <input 
             type="text" 
             placeholder="Search equipment, SKUs..." 
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-100/50 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg outline-none text-sm transition-all duration-500 ease-out font-medium text-slate-800"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-100/70 border border-gray-200 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 rounded-lg outline-none text-sm transition-all duration-300 font-medium text-slate-800"
           />
           <Search className="absolute left-3 top-3 text-gray-400 w-4 h-4 group-focus-within:text-blue-600 transition-colors duration-300" />
+          
+          {/* Predictive Search Dropdown */}
+          {isSearchFocused && searchQuery.length > 1 && (
+            <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+              {searchResults.length > 0 ? (
+                <div className="py-2">
+                  <div className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-gray-100">Products</div>
+                  {searchResults.map(item => (
+                    <div 
+                      key={item.id} 
+                      onClick={() => { navigate('product', item.id); setSearchQuery(''); }}
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
+                    >
+                      <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded bg-slate-100 mix-blend-multiply" />
+                      <div>
+                        <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-0.5">{item.brand}</p>
+                        <p className="text-sm font-bold text-slate-800 leading-tight">{item.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center text-slate-500 text-sm font-medium">No equipment found matching "{searchQuery}"</div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Desktop Links */}
         <nav className="hidden lg:flex items-center space-x-8 text-sm font-semibold">
           <button onClick={() => navigate('home')} className="text-slate-700 hover:text-blue-600 transition-colors duration-300">Home</button>
-          <div className="relative group">
-            <button onClick={() => navigate('category', CATEGORIES[0].id)} className="text-slate-700 hover:text-blue-600 flex items-center transition-colors duration-300 pb-8 -mb-8">
+          <div className="relative group h-full flex items-center">
+            <button onClick={() => navigate('category', CATEGORIES[0].id)} className="text-slate-700 hover:text-blue-600 flex items-center transition-colors duration-300 py-6">
               Products <ChevronDown className="w-3.5 h-3.5 ml-1 opacity-50 group-hover:rotate-180 transition-transform duration-500 ease-out" />
             </button>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-6 w-60 bg-white/95 backdrop-blur-xl border border-gray-100 shadow-2xl shadow-blue-900/10 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 ease-out transform group-hover:-translate-y-1 origin-top">
-              {CATEGORIES.map((cat, idx) => (
-                <button key={cat.id} onClick={() => navigate('category', cat.id)} className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors duration-300 font-medium" style={{ transitionDelay: `${idx * 30}ms` }}>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-60 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-2xl shadow-blue-900/10 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out transform group-hover:translate-y-0 translate-y-2 origin-top">
+              {CATEGORIES.map((cat) => (
+                <button key={cat.id} onClick={() => navigate('category', cat.id)} className="block w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors duration-200 font-medium">
                   {cat.name}
                 </button>
               ))}
@@ -225,7 +307,25 @@ const Navbar = ({ navigate, onOpenQuote }) => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-b border-gray-200 p-6 flex flex-col space-y-2 shadow-2xl transition-all duration-500">
-          <input type="text" placeholder="Search..." className="w-full px-4 py-3 bg-gray-100 border border-transparent focus:border-blue-300 rounded-lg outline-none text-sm mb-4 transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-100 border border-transparent focus:border-blue-300 rounded-lg outline-none text-sm mb-4 transition-colors" 
+          />
+          {/* Mobile Search Results */}
+          {searchQuery.length > 1 && searchResults.length > 0 && (
+             <div className="bg-white rounded-lg border border-gray-200 shadow-inner mb-4 overflow-hidden">
+               {searchResults.map(item => (
+                 <div key={item.id} onClick={() => { navigate('product', item.id); setIsMobileMenuOpen(false); setSearchQuery(''); }} className="p-3 border-b border-gray-100 flex items-center gap-3">
+                   <img src={item.image} className="w-8 h-8 object-cover rounded bg-slate-50 mix-blend-multiply" alt=""/>
+                   <p className="text-sm font-bold text-slate-800 truncate">{item.name}</p>
+                 </div>
+               ))}
+             </div>
+          )}
+
           <button onClick={() => { navigate('home'); setIsMobileMenuOpen(false); }} className="text-left text-sm font-bold py-3 text-slate-800 border-b border-gray-50">Home</button>
           <button onClick={() => { navigate('category', CATEGORIES[0].id); setIsMobileMenuOpen(false); }} className="text-left text-sm font-bold py-3 text-slate-800 border-b border-gray-50">All Products</button>
           <button onClick={() => { navigate('about'); setIsMobileMenuOpen(false); }} className="text-left text-sm font-bold py-3 text-slate-800 border-b border-gray-50">Company Profile</button>
@@ -238,8 +338,14 @@ const Navbar = ({ navigate, onOpenQuote }) => {
 };
 
 // 2. Quote Modal
-const QuoteModal = ({ isOpen, onClose, productContext = null }) => {
+const QuoteModal = ({ isOpen, onClose, productContext = null, onToast }) => {
   if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onClose();
+    onToast("Enquiry submitted successfully. Our team will contact you shortly.");
+  };
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 transition-all duration-500">
@@ -251,7 +357,7 @@ const QuoteModal = ({ isOpen, onClose, productContext = null }) => {
           </div>
           <button onClick={onClose} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-400 hover:text-gray-800 hover:bg-gray-50 transition-colors duration-300 shadow-sm"><X className="w-5 h-5" /></button>
         </div>
-        <form className="p-8 space-y-6" onSubmit={(e) => { e.preventDefault(); alert('Request Sent Successfully. Our team will contact you shortly.'); onClose(); }}>
+        <form className="p-8 space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-6">
             <div className="group">
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 group-focus-within:text-blue-600 transition-colors duration-300">Full Name *</label>
@@ -277,8 +383,8 @@ const QuoteModal = ({ isOpen, onClose, productContext = null }) => {
             <textarea required rows={4} className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none resize-none transition-all duration-300" />
           </div>
           <div className="pt-2">
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-all duration-500 ease-out text-sm shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.7)] hover:-translate-y-0.5 flex justify-center items-center">
-              Submit Enquiry <ArrowUpRight className="w-4 h-4 ml-2 opacity-80" />
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-all duration-500 ease-out text-sm shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.7)] hover:-translate-y-0.5">
+              Submit Enquiry
             </button>
           </div>
         </form>
@@ -303,7 +409,7 @@ const HomeView = ({ navigate, onOpenQuote }) => (
       {/* Main Hero Content - Centered */}
       <div className="w-full max-w-4xl mx-auto px-[5%] flex flex-col items-center justify-center text-center relative z-20 pt-20 pb-12 flex-grow">
         <FadeIn delay={100}>
-          <div className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wider mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+          <div className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wider mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(16,185,129,0.2)] cursor-pointer hover:bg-emerald-800/40 transition-colors" onClick={() => window.open('https://www.indiamart.com/ecomed-solutions/', '_blank')}>
             <BadgeCheck className="w-4 h-4 mr-2 text-emerald-400" />
             IndiaMART TrustSeal Verified Supplier
           </div>
@@ -637,7 +743,7 @@ const HomeView = ({ navigate, onOpenQuote }) => (
         <FadeIn delay={300} direction="left">
           <div className="bg-white rounded-2xl p-8 lg:p-12 text-slate-900 shadow-2xl shadow-blue-900/5 border border-gray-100">
             <h3 className="text-3xl font-extrabold mb-8 tracking-tight flex items-center"><MessageSquare className="w-6 h-6 mr-4 text-blue-600"/> Quick Enquiry</h3>
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onOpenQuote(); }}>
               <div>
                 <input type="text" placeholder="Name / Hospital" className="w-full bg-slate-50 border border-gray-200 rounded-lg px-5 py-4 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all duration-300 font-medium" />
               </div>
@@ -647,7 +753,7 @@ const HomeView = ({ navigate, onOpenQuote }) => (
               <div>
                 <textarea rows={4} placeholder="Requirements / List of Items" className="w-full bg-slate-50 border border-gray-200 rounded-lg px-5 py-4 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none resize-none transition-all duration-300 font-medium"></textarea>
               </div>
-              <button className="w-full bg-slate-900 text-white font-extrabold py-4 rounded-lg text-base hover:bg-blue-600 transition-all duration-500 ease-out shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.5)] hover:-translate-y-1 mt-2 flex justify-center items-center">
+              <button type="submit" className="w-full bg-slate-900 text-white font-extrabold py-4 rounded-lg text-base hover:bg-blue-600 transition-all duration-500 ease-out shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.5)] hover:-translate-y-1 mt-2 flex justify-center items-center">
                 Send Requirement <ArrowUpRight className="w-5 h-5 ml-2 opacity-70"/>
               </button>
             </form>
@@ -663,7 +769,7 @@ const CategoryView = ({ categoryId, navigate, onOpenQuote }) => {
   const products = PRODUCTS.filter(p => p.categoryId === category.id);
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12 animate-in fade-in duration-500">
+    <div className="bg-slate-50 min-h-screen py-12 animate-in fade-in duration-500 mt-20">
       <div className="w-full max-w-7xl mx-auto px-[5%]">
         {/* Breadcrumb */}
         <div className="flex items-center text-[11px] font-bold text-slate-400 mb-10 uppercase tracking-widest">
@@ -747,12 +853,14 @@ const CategoryView = ({ categoryId, navigate, onOpenQuote }) => {
 
 const ProductView = ({ productId, navigate, onOpenQuote }) => {
   const [activeTab, setActiveTab] = useState('specs');
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
   const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
   const category = CATEGORIES.find(c => c.id === product.categoryId);
   const relatedProducts = PRODUCTS.filter(p => p.id !== product.id).slice(0, 4);
 
   return (
-    <div className="bg-white min-h-screen py-12 animate-in fade-in duration-500 pb-32">
+    <div className="bg-white min-h-screen py-12 animate-in fade-in duration-500 pb-32 mt-20">
       <div className="w-full max-w-7xl mx-auto px-[5%]">
         <div className="flex items-center text-[11px] font-bold text-slate-400 mb-10 uppercase tracking-widest border-b border-gray-100 pb-5">
           <button onClick={() => navigate('home')} className="hover:text-blue-600 transition-colors">Home</button>
@@ -762,13 +870,34 @@ const ProductView = ({ productId, navigate, onOpenQuote }) => {
           <span className="text-slate-800 truncate">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 mt-10">
           <FadeIn>
-            <div className="bg-slate-50 border border-gray-200 rounded-2xl p-12 flex items-center justify-center aspect-square shadow-inner relative group overflow-hidden">
-              <img src={product.image} alt={product.name} className="max-w-full h-auto mix-blend-multiply group-hover:scale-105 transition-transform duration-1000 ease-out relative z-10" />
-              <div className="absolute top-6 left-6 z-20 flex gap-2">
-                <span className="bg-white border border-gray-200 text-emerald-600 text-[10px] font-extrabold px-3 py-1.5 rounded-md shadow-sm flex items-center"><BadgeCheck className="w-3 h-3 mr-1"/> IndiaMART Verified</span>
+            <div className="flex flex-col gap-4">
+              <div className="bg-slate-50 border border-gray-200 rounded-2xl p-12 flex items-center justify-center aspect-square shadow-inner relative overflow-hidden group">
+                <img 
+                  src={product.gallery ? product.gallery[activeImageIndex] : product.image} 
+                  alt={product.name} 
+                  className="max-w-full h-auto mix-blend-multiply transition-all duration-500 ease-out relative z-10" 
+                />
+                <div className="absolute top-6 left-6 z-20 flex gap-2">
+                  <span className="bg-white border border-gray-200 text-emerald-600 text-[10px] font-extrabold px-3 py-1.5 rounded-md shadow-sm flex items-center"><BadgeCheck className="w-3 h-3 mr-1"/> IndiaMART Verified</span>
+                </div>
               </div>
+              
+              {/* Interactive Image Gallery */}
+              {product.gallery && product.gallery.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {product.gallery.map((img, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`relative w-20 h-20 rounded-xl border-2 overflow-hidden flex-shrink-0 transition-all duration-300 bg-slate-50 ${activeImageIndex === idx ? 'border-blue-600 shadow-md' : 'border-transparent hover:border-blue-300'}`}
+                    >
+                      <img src={img} alt={`View ${idx+1}`} className="w-full h-full object-cover mix-blend-multiply opacity-80 hover:opacity-100" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </FadeIn>
 
@@ -805,7 +934,7 @@ const ProductView = ({ productId, navigate, onOpenQuote }) => {
               <button onClick={() => onOpenQuote(product)} className="flex-1 bg-slate-900 hover:bg-blue-600 text-white font-extrabold py-4 rounded-lg text-base transition-all duration-500 ease-out shadow-lg hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.6)] hover:-translate-y-1 text-center flex justify-center items-center">
                 Request Formal Quote <ArrowUpRight className="w-5 h-5 ml-2 opacity-70" />
               </button>
-              <a href={`https://wa.me/${COMPANY_INFO.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="sm:px-10 bg-white border-2 border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-800 font-extrabold py-4 rounded-lg text-base transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md">
+              <a href={`https://wa.me/${COMPANY_INFO.whatsapp}`} target="_blank" rel="noreferrer" className="sm:px-10 bg-white border-2 border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-800 font-extrabold py-4 rounded-lg text-base transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md">
                  <MessageSquare className="w-5 h-5 mr-3 text-emerald-600" /> WhatsApp
               </a>
             </div>
@@ -904,14 +1033,14 @@ const ProductView = ({ productId, navigate, onOpenQuote }) => {
 };
 
 const AboutContactView = ({ view, onOpenQuote }) => (
-  <div className="bg-slate-50 min-h-screen animate-in fade-in pb-32">
+  <div className="bg-slate-50 min-h-screen animate-in fade-in pb-32 mt-20">
     <div className="bg-slate-900 py-32 text-center text-white relative overflow-hidden border-b-[8px] border-blue-600">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
       <div className="absolute top-[-50%] left-[-10%] w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none animate-pulse"></div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto px-[5%]">
         <FadeIn>
-          <div className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wider mb-8 backdrop-blur-md">
+          <div className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-900/40 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wider mb-8 backdrop-blur-md cursor-pointer hover:bg-emerald-800/40 transition-colors" onClick={() => window.open('https://www.indiamart.com/ecomed-solutions/', '_blank')}>
             <BadgeCheck className="w-4 h-4 mr-2 text-emerald-400" />
             Verified IndiaMART Supplier
           </div>
@@ -1048,13 +1177,15 @@ const AboutContactView = ({ view, onOpenQuote }) => (
             <FadeIn delay={300}>
               <div className="bg-slate-900 text-white p-8 rounded-2xl shadow-2xl border border-slate-800 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full pointer-events-none group-hover:bg-blue-500/40 transition-colors duration-500"></div>
-                <h4 className="font-extrabold mb-6 uppercase tracking-widest text-[11px] text-cyan-400 flex items-center relative z-10"><Globe className="w-5 h-5 mr-3"/> Contact Details</h4>
+                <h4 className="font-extrabold mb-6 uppercase tracking-widest text-[11px] text-cyan-400 flex items-center relative z-10"><Globe className="w-5 h-5 mr-3"/> Regional Offices</h4>
                 <div className="space-y-8 text-sm relative z-10">
-                  <div className="border-l-2 border-slate-700 pl-4">
-                    <p className="font-extrabold text-white text-base mb-1.5">Owner / Contact</p>
-                    <p className="text-slate-400 font-medium text-sm">Neeta Wani</p>
-                    <p className="text-cyan-400 font-bold mt-2 bg-slate-800/50 w-fit px-2 py-1 rounded">{COMPANY_INFO.phone}</p>
-                  </div>
+                  {REGIONAL_OFFICES.map((office, idx) => (
+                    <div key={idx} className="border-l-2 border-slate-700 pl-4">
+                      <p className="font-extrabold text-white text-base mb-1.5">{office.city}</p>
+                      <p className="text-slate-400 font-medium text-sm">{office.address}</p>
+                      <p className="text-cyan-400 font-bold mt-2 bg-slate-800/50 w-fit px-2 py-1 rounded">{office.phone}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </FadeIn>
@@ -1063,7 +1194,7 @@ const AboutContactView = ({ view, onOpenQuote }) => (
           {/* Form */}
           <div className="lg:col-span-3">
             <FadeIn delay={200} direction="left">
-              <form className="space-y-6 bg-white border border-gray-200 p-10 md:p-14 rounded-2xl shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow duration-500" onSubmit={(e) => { e.preventDefault(); alert("Enquiry Submitted Successfully"); }}>
+              <form className="space-y-6 bg-white border border-gray-200 p-10 md:p-14 rounded-2xl shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow duration-500" onSubmit={(e) => { e.preventDefault(); onOpenQuote(); }}>
                  <div className="mb-10 border-b border-gray-100 pb-8">
                    <h3 className="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">Direct Transmission</h3>
                    <p className="text-slate-500 font-medium text-base">Our enterprise team typically responds within 2 hours.</p>
@@ -1152,6 +1283,44 @@ const Footer = ({ navigate }) => (
   </footer>
 );
 
+// Floating WhatsApp Widget
+const FloatingWhatsApp = () => (
+  <a 
+    href={`https://wa.me/${COMPANY_INFO.whatsapp}`} 
+    target="_blank" 
+    rel="noreferrer"
+    className="hidden lg:flex fixed bottom-8 right-8 z-[90] bg-[#25D366] hover:bg-[#128C7E] text-white p-4 rounded-full shadow-[0_10px_25px_-5px_rgba(37,211,102,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(37,211,102,0.6)] hover:-translate-y-1 transition-all duration-300 group"
+  >
+    <MessageSquare className="w-8 h-8" />
+    {/* Tooltip */}
+    <span className="absolute right-full top-1/2 -translate-y-1/2 mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+      Chat with Sales
+    </span>
+  </a>
+);
+
+// Back to Top Button
+const BackToTop = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => window.scrollY > 500 ? setIsVisible(true) : setIsVisible(false);
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  return isVisible && (
+    <button 
+      onClick={scrollToTop}
+      className="hidden lg:flex fixed bottom-24 right-8 z-[80] bg-slate-900/80 hover:bg-slate-900 text-white p-3 rounded-full backdrop-blur-sm shadow-lg hover:-translate-y-1 transition-all duration-300"
+    >
+      <ArrowUp className="w-5 h-5" />
+    </button>
+  );
+};
+
 // Mobile Sticky Bar
 const MobileStickyBar = ({ onOpenQuote }) => (
   <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl border-t border-gray-200 p-3 z-40 flex gap-3 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.15)]">
@@ -1172,8 +1341,25 @@ export default function App() {
   const [route, setRoute] = useState({ page: 'home', id: null });
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [quoteContext, setQuoteContext] = useState(null);
+  const [toastConfig, setToastConfig] = useState(null); // { message: '', type: 'success' }
 
-  useEffect(() => { window.scrollTo({top: 0, behavior: 'smooth'}); }, [route]);
+  // Update Document Title based on Route
+  useEffect(() => {
+    let title = COMPANY_INFO.name;
+    if (route.page === 'category') {
+      const cat = CATEGORIES.find(c => c.id === route.id);
+      title = cat ? `${cat.name} | ${COMPANY_INFO.name}` : title;
+    } else if (route.page === 'product') {
+      const prod = PRODUCTS.find(p => p.id === route.id);
+      title = prod ? `${prod.name} | ${COMPANY_INFO.name}` : title;
+    } else if (route.page === 'about') {
+      title = `Company Profile | ${COMPANY_INFO.name}`;
+    } else if (route.page === 'contact') {
+      title = `Contact Us | ${COMPANY_INFO.name}`;
+    }
+    document.title = title;
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+  }, [route]);
 
   useEffect(() => {
     const link = document.createElement('link');
@@ -1183,10 +1369,26 @@ export default function App() {
   }, []);
 
   const navigate = (page, id = null) => setRoute({ page, id });
-  const handleOpenQuote = (context = null) => { setQuoteContext(context); setIsQuoteModalOpen(true); };
+  
+  const handleOpenQuote = (context = null) => { 
+    setQuoteContext(context); 
+    setIsQuoteModalOpen(true); 
+  };
+
+  const handleShowToast = (message, type = 'success') => {
+    setToastConfig({ message, type });
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-200" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {toastConfig && (
+        <Toast 
+          message={toastConfig.message} 
+          type={toastConfig.type} 
+          onClose={() => setToastConfig(null)} 
+        />
+      )}
+      
       <Navbar navigate={navigate} onOpenQuote={handleOpenQuote} />
       <main className="w-full">
         {route.page === 'home' && <HomeView navigate={navigate} onOpenQuote={handleOpenQuote} />}
@@ -1196,8 +1398,18 @@ export default function App() {
         {route.page === 'contact' && <AboutContactView view="contact" onOpenQuote={handleOpenQuote} />}
       </main>
       <Footer navigate={navigate} />
+      
+      {/* Global Utilities */}
       <MobileStickyBar onOpenQuote={handleOpenQuote} />
-      <QuoteModal isOpen={isQuoteModalOpen} onClose={() => setIsQuoteModalOpen(false)} productContext={quoteContext} />
+      <FloatingWhatsApp />
+      <BackToTop />
+      
+      <QuoteModal 
+        isOpen={isQuoteModalOpen} 
+        onClose={() => setIsQuoteModalOpen(false)} 
+        productContext={quoteContext} 
+        onToast={handleShowToast}
+      />
     </div>
   );
 }
