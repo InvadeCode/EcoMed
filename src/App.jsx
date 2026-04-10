@@ -3,8 +3,43 @@ import {
   HeartPulse, Stethoscope, Activity, Phone, Mail, MapPin, Search, Menu, X, 
   ChevronRight, ShieldCheck, Truck, CheckCircle2, FileText, Building2, 
   Users, ArrowRight, Upload, PhoneCall, MessageSquare, ChevronDown, Globe,
-  Download, BookOpen, Award, Map, Video, ArrowUpRight, BadgeCheck, Check, Star, ArrowUp
+  Download, BookOpen, Award, Map, Video, ArrowUpRight, BadgeCheck, Check, Star, ArrowUp,
+  Sparkles, Bot, Send, Loader2
 } from 'lucide-react';
+
+// --- GEMINI API INTEGRATION ---
+const callGeminiAPI = async (prompt, systemPrompt = "") => {
+  const apiKey = ""; // API key injected at runtime
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    ...(systemPrompt && { systemInstruction: { parts: [{ text: systemPrompt }] } })
+  };
+
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+  const retries = [1000, 2000, 4000, 8000, 16000];
+
+  for (let i = 0; i < retries.length; i++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+    } catch (error) {
+      if (i === retries.length - 1) {
+        console.error("Gemini API failed after retries", error);
+        return "Sorry, our AI services are currently experiencing high traffic. Please try again in a moment.";
+      }
+      await delay(retries[i]);
+    }
+  }
+};
+
 
 // --- CUSTOM ANIMATION COMPONENT ---
 const FadeIn = ({ children, delay = 0, className = "", direction = "up" }) => {
@@ -337,14 +372,35 @@ const Navbar = ({ navigate, onOpenQuote }) => {
   );
 };
 
-// 2. Quote Modal
+// 2. Quote Modal (Now with ✨ Smart BOQ Enhancer)
 const QuoteModal = ({ isOpen, onClose, productContext = null, onToast }) => {
+  const [requirements, setRequirements] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setRequirements(productContext ? `Requesting quote for:\nSKU: ${productContext.sku || 'N/A'}\nProduct: ${productContext.name}\nQuantity Required: ` : "");
+    }
+  }, [isOpen, productContext]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onClose();
     onToast("Enquiry submitted successfully. Our team will contact you shortly.");
+  };
+
+  const handleAIEnhance = async () => {
+    if (!requirements.trim()) return;
+    setIsEnhancing(true);
+    
+    const prompt = `Convert the following rough medical equipment request into a highly professional, structured B2B Bill of Quantities (BOQ) list or formal procurement inquiry. Format it beautifully with bullet points or numbered lists. Ensure it sounds formal and leaves brackets like [Insert Quantity] if specifics are missing. Make it ready to be submitted to a B2B supplier.\n\nUser Request: ${requirements}`;
+    const systemInstruction = "You are a professional medical procurement officer. Output only the formatted BOQ/Inquiry text without conversational filler.";
+    
+    const enhancedText = await callGeminiAPI(prompt, systemInstruction);
+    setRequirements(enhancedText);
+    setIsEnhancing(false);
   };
 
   return (
@@ -379,8 +435,26 @@ const QuoteModal = ({ isOpen, onClose, productContext = null, onToast }) => {
             </div>
           </div>
           <div className="group">
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 group-focus-within:text-blue-600 transition-colors duration-300">Requirement Details / BOQ *</label>
-            <textarea required rows={4} className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none resize-none transition-all duration-300" />
+            <div className="flex justify-between items-end mb-2">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-blue-600 transition-colors duration-300">Requirement Details / BOQ *</label>
+              <button 
+                type="button" 
+                onClick={handleAIEnhance}
+                disabled={isEnhancing || !requirements.trim()}
+                className="flex items-center text-[10px] font-extrabold text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 rounded transition-colors"
+              >
+                {isEnhancing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                {isEnhancing ? 'Enhancing...' : 'AI Enhance'}
+              </button>
+            </div>
+            <textarea 
+              required 
+              rows={5} 
+              value={requirements}
+              onChange={(e) => setRequirements(e.target.value)}
+              placeholder="e.g. Need 5 ICU beds, 2 oxygen concentrators..."
+              className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none resize-none transition-all duration-300" 
+            />
           </div>
           <div className="pt-2">
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-all duration-500 ease-out text-sm shadow-[0_10px_20px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.7)] hover:-translate-y-0.5">
@@ -392,6 +466,120 @@ const QuoteModal = ({ isOpen, onClose, productContext = null, onToast }) => {
     </div>
   );
 };
+
+// --- ✨ AI ASSISTANT WIDGET ---
+const AIAssistantWidget = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'model', text: 'Hello! I am your AI Procurement Advisor from EcoMed Solutions. How can I assist you with your medical equipment needs today?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isOpen]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setIsLoading(true);
+
+    const systemPrompt = `You are a helpful and professional AI Procurement Advisor for EcoMed Solutions, a B2B medical equipment supplier in Pune, India. 
+    You help hospitals and clinics find the right equipment. 
+    Information about EcoMed: ${JSON.stringify(COMPANY_INFO)}.
+    Products available: ${PRODUCTS.map(p=>p.name).join(', ')}.
+    Keep answers concise, polite, and strictly related to medical equipment procurement. Format lists clearly.`;
+
+    // Include context of previous messages (simplified for this implementation)
+    const contextPrompt = messages.slice(-3).map(m => `${m.role === 'user' ? 'Client' : 'You'}: ${m.text}`).join('\n') + `\nClient: ${userMessage}`;
+    
+    const responseText = await callGeminiAPI(contextPrompt, systemPrompt);
+    
+    setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+    setIsLoading(false);
+  };
+
+  return (
+    <>
+      {/* Floating Button */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className={`hidden lg:flex fixed bottom-24 right-8 z-[85] bg-slate-900 hover:bg-blue-600 text-white p-4 rounded-full shadow-[0_10px_25px_-5px_rgba(15,23,42,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(37,99,235,0.5)] hover:-translate-y-1 transition-all duration-300 group ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+      >
+        <Sparkles className="w-8 h-8" />
+        <span className="absolute right-full top-1/2 -translate-y-1/2 mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          AI Procurement Advisor
+        </span>
+      </button>
+
+      {/* Chat Window */}
+      <div className={`fixed bottom-8 right-8 z-[110] w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all duration-500 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
+        {/* Header */}
+        <div className="bg-slate-900 p-4 flex justify-between items-center">
+          <div className="flex items-center text-white">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center mr-3">
+              <Bot className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-sm tracking-tight leading-tight">EcoMed Advisor</h3>
+              <p className="text-[10px] text-blue-300 uppercase tracking-widest font-bold">✨ AI Powered</p>
+            </div>
+          </div>
+          <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 h-96 p-4 overflow-y-auto bg-slate-50 space-y-4">
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-slate-700 rounded-bl-none shadow-sm'}`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex items-center gap-2">
+                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex gap-2">
+          <input 
+            type="text" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about products, MOQ, compliance..." 
+            className="flex-1 bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all"
+          />
+          <button 
+            type="submit" 
+            disabled={!input.trim() || isLoading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white p-2.5 rounded-lg transition-colors flex items-center justify-center shadow-sm"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
+    </>
+  );
+};
+
 
 // 3. Views
 
@@ -753,7 +941,7 @@ const HomeView = ({ navigate, onOpenQuote }) => (
               <div>
                 <textarea rows={4} placeholder="Requirements / List of Items" className="w-full bg-slate-50 border border-gray-200 rounded-lg px-5 py-4 text-sm focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none resize-none transition-all duration-300 font-medium"></textarea>
               </div>
-              <button type="submit" className="w-full bg-slate-900 text-white font-extrabold py-4 rounded-lg text-base hover:bg-blue-600 transition-all duration-500 ease-out shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.5)] hover:-translate-y-1 mt-2 flex justify-center items-center">
+              <button className="w-full bg-slate-900 text-white font-extrabold py-4 rounded-lg text-base hover:bg-blue-600 transition-all duration-500 ease-out shadow-[0_10px_20px_-10px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_25px_-10px_rgba(37,99,235,0.5)] hover:-translate-y-1 mt-2 flex justify-center items-center">
                 Send Requirement <ArrowUpRight className="w-5 h-5 ml-2 opacity-70"/>
               </button>
             </form>
@@ -1403,6 +1591,7 @@ export default function App() {
       <MobileStickyBar onOpenQuote={handleOpenQuote} />
       <FloatingWhatsApp />
       <BackToTop />
+      <AIAssistantWidget />
       
       <QuoteModal 
         isOpen={isQuoteModalOpen} 
